@@ -1,6 +1,7 @@
 import os; os.environ['DATABASE_URL'] = 'sqlite:///./test.db'
 from fastapi.testclient import TestClient
 from app.main import app
+from app.core import engine
 def H(t): return {'Authorization': 'Bearer ' + t}
 with TestClient(app) as c:
     assert c.post('/auth/register', json={'name': 'S', 'email': 's@x.com', 'password': 'pass1234', 'role': 'student'}).status_code == 201
@@ -22,4 +23,5 @@ with TestClient(app) as c:
     assert c.get('/admin/analytics', headers=H(ad['access_token'])).json()['organizations_approved'] == 1
     assert any(l['action'] == 'ORG_APPROVED' for l in c.get('/admin/audit', headers=H(ad['access_token'])).json())
 print('ALL BACKEND TESTS PASSED')
+engine.dispose()
 os.remove('test.db') if os.path.exists('test.db') else None

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 const TK = 'scms_tokens'
+const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, '')
 export const getTokens = (): { access: string; refresh: string } | null => { try { return JSON.parse(localStorage.getItem(TK) || 'null') } catch { return null } }
 export const setTokens = (t: { access: string; refresh: string } | null) => (t ? localStorage.setItem(TK, JSON.stringify(t)) : localStorage.removeItem(TK))
 const msg = (d: any): string => typeof d?.detail === 'string' ? d.detail : Array.isArray(d?.detail) ? d.detail.map((x: any) => x.msg).join('; ') : 'Something went wrong.'
 async function raw(path: string, method: string, body: unknown, token?: string) {
   const h: Record<string, string> = { 'Content-Type': 'application/json' }; if (token) h.Authorization = 'Bearer ' + token
-  try { return await fetch('/api' + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) }) }
-  catch { throw new Error('Cannot reach the server. Is the backend running on port 8000?') }
+  try { return await fetch(API_BASE + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) }) }
+  catch { throw new Error('Cannot reach the API. Check the deployment API URL and backend availability.') }
 }
 export async function api<T = any>(path: string, method = 'GET', body?: unknown, auth = true): Promise<T> {
   let t = getTokens(); let r = await raw(path, method, body, auth ? t?.access : undefined)

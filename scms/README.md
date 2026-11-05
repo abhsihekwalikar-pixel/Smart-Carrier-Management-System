@@ -36,7 +36,15 @@ cd backend
 python test_api.py && python test_features.py
 ```
 ## Production
-`docker compose up --build` (needs `SECRET_KEY` and `ADMIN_PASSWORD` in a `.env` file) -> http://localhost:8080. Put it behind HTTPS and restrict CORS origins in `backend/app/main.py`.
+`docker compose up --build` (needs `SECRET_KEY` and `ADMIN_PASSWORD` in a `.env` file) -> http://localhost:8080. The Docker/nginx setup serves the frontend and proxies `/api` to FastAPI on the same origin.
+
+For separate frontend and backend hosting:
+- Set the frontend build variable `VITE_API_URL` to the backend API origin (for example, `https://api.example.com`, without a trailing slash).
+- Set backend `CORS_ORIGINS` to the exact frontend origin(s), comma-separated (for example, `https://scms.example.com`). Do not include API paths in these origins.
+- Set `DATABASE_URL`, `SECRET_KEY`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in the backend's environment. Keep the database persistent.
+- `ADMIN_EMAIL` and `ADMIN_PASSWORD` are used only when the database is first seeded. Changing them later does not change an existing admin account's credentials.
+
+After changing frontend build variables, rebuild and redeploy the frontend. After changing backend environment variables, restart/redeploy the backend.
 
 ## Notes
 - AI features use a rule-based generator on the server (no external LLM). Admin can disable it or change its tone.

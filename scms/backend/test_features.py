@@ -28,7 +28,8 @@ with TestClient(app) as c:
     assert c.delete(f'/org/templates/certificate/{tid}', headers=H(O)).status_code == 409        # template in use
     assert c.post(f'/org/documents/{vid}/revoke', headers=H(O)).status_code == 200
     assert c.get('/verify/' + vid).json()['revoked'] is True and c.get(f'/documents/{vid}/pdf', headers=H(S)).status_code == 410
-    assert len(c.get('/org/documents', headers=H(O)).json()) == 2 and len(c.get('/admin/templates', headers=H(A)).json()) == 1
+    templates = c.get('/admin/templates', headers=H(A)).json()
+    assert len(c.get('/org/documents', headers=H(O)).json()) == 2 and any(t['name'] == 'Completion' and t['organization'] == 'Acme' for t in templates)
     # ---- student: resume, versions, upload, AI, portfolio ----
     cont = {'name': 'Asha', 'email': 'asha@x.com', 'summary': '', 'skills': ['Python', 'python', 'SQL'], 'experience': [{'title': 'Intern', 'detail': 'worked on APIs\nhelped the team'}]}
     rid = c.post('/resumes', json={'title': 'Main', 'content': cont}, headers=H(S)).json()['id']

@@ -1,3 +1,4 @@
+import os
 import re
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -19,7 +20,8 @@ async def lifespan(_):
     yield
 app = FastAPI(title='SCMS API', lifespan=lifespan)
 app.include_router(features_router)
-app.add_middleware(CORSMiddleware, allow_origins=['http://localhost:5173', 'http://127.0.0.1:5173'], allow_methods=['*'], allow_headers=['*'])
+cors_origins = [origin.strip().rstrip('/') for origin in os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',') if origin.strip()]
+app.add_middleware(CORSMiddleware, allow_origins=cors_origins, allow_methods=['*'], allow_headers=['*'])
 class RegisterIn(BaseModel):
     name: str = Field(min_length=1, max_length=120); email: str; password: str
     role: Literal['student', 'organization']; org_name: str = ''; college: str = ''; course: str = ''
