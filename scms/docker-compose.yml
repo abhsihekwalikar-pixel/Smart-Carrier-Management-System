@@ -1,0 +1,21 @@
+# Production-style stack: MySQL + FastAPI + React (nginx). Run: docker compose up --build  ->  http://localhost:8080
+# Set a real SECRET_KEY and ADMIN_PASSWORD in a .env file next to this file before deploying.
+services:
+  db:
+    image: mysql:8
+    environment: { MYSQL_DATABASE: scms, MYSQL_USER: scms, MYSQL_PASSWORD: "${DB_PASSWORD:-scms-pass}", MYSQL_ROOT_PASSWORD: "${DB_PASSWORD:-scms-pass}" }
+    volumes: [dbdata:/var/lib/mysql]
+    healthcheck: { test: ["CMD", "mysqladmin", "ping", "-h", "localhost"], interval: 5s, retries: 20 }
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: "mysql+pymysql://scms:${DB_PASSWORD:-scms-pass}@db:3306/scms"
+      SECRET_KEY: "${SECRET_KEY:?set SECRET_KEY in .env}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL:-admin@scms.com}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}"
+    depends_on: { db: { condition: service_healthy } }
+  web:
+    build: .
+    ports: ["8080:80"]
+    depends_on: [backend]
+volumes: { dbdata: {} }

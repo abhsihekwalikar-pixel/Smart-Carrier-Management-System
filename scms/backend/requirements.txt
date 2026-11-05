@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pymysql
+pyjwt
+bcrypt
+httpx
+reportlab
+qrcode[pil]
+pypdf
